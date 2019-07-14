@@ -44,47 +44,6 @@ int roll_result = 0;
 // This is updated by the tilt-switch pin interrupt
 volatile bool tilted = false;
 
-void setup() {
-  uView.begin();    // set up the MicroView
-  uView.clear(PAGE);// erase hardware memory inside the OLED
-  uView.display();  // display the content in the now cleared buffer
-
-  uView.setFontType(2); // set font type 2 (7segment)
-  // FIXME: Can I find/make a more D&D/fantasy style font instead?
-  //
-  digit_width = uView.getFontWidth();
-  half_digit_height = uView.getFontHeight() / 2;
-
-  // Draw clock face (circle outline & text):
-  drawFace();
-
-  Serial.begin(9600);
-  // Enable a pull up resistor built in to the Arduino controller.
-  // FIXME: Is that built in for every pin?
-  pinMode(2, INPUT_PULLUP);
-
-  // Whenever the state changes on D2, change toggled the tilted bool.
-  // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
-  // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
-  // FIXME: roll_result is not volatile, it should not be getting set directly here
-  // FIXME: Should I update the random seed?
-  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;roll_result = random(100);}, CHANGE);
-}
-
-void loop() {
-  drawTime();
-  uView.invert(tilted);
-  Serial.print("D2 = ");
-  Serial.print(digitalRead(2));
-  Serial.print("; tilted = ");
-  Serial.print(tilted);
-  Serial.print("; A0 = ");
-  Serial.print(analogRead(A0) / 1024.0);
-  Serial.print("; roll = ");
-  Serial.print(roll_result);
-  Serial.println();
-}
-
 void drawTime() {
   static boolean firstDraw = false;
   static unsigned long mSec = millis() + 1000;
@@ -155,4 +114,45 @@ void drawFace() {
 
   //Draw the clock
   uView.display();
+}
+
+void setup() {
+  uView.begin();    // set up the MicroView
+  uView.clear(PAGE);// erase hardware memory inside the OLED
+  uView.display();  // display the content in the now cleared buffer
+
+  uView.setFontType(2); // set font type 2 (7segment)
+  // FIXME: Can I find/make a more D&D/fantasy style font instead?
+  //
+  digit_width = uView.getFontWidth();
+  half_digit_height = uView.getFontHeight() / 2;
+
+  // Draw clock face (circle outline & text):
+  drawFace();
+
+  Serial.begin(9600);
+  // Enable a pull up resistor built in to the Arduino controller.
+  // FIXME: Is that built in for every pin?
+  pinMode(2, INPUT_PULLUP);
+
+  // Whenever the state changes on D2, change toggled the tilted bool.
+  // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
+  // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
+  // FIXME: roll_result is not volatile, it should not be getting set directly here
+  // FIXME: Should I update the random seed?
+  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;roll_result = random(100);}, CHANGE);
+}
+
+void loop() {
+  drawTime();
+  uView.invert(tilted);
+  Serial.print("D2 = ");
+  Serial.print(digitalRead(2));
+  Serial.print("; tilted = ");
+  Serial.print(tilted);
+  Serial.print("; A0 = ");
+  Serial.print(analogRead(A0) / 1024.0);
+  Serial.print("; roll = ");
+  Serial.print(roll_result);
+  Serial.println();
 }
