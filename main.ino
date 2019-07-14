@@ -118,7 +118,8 @@ void setup() {
   // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
   // FIXME: roll_result is not volatile, it should not be getting set directly here
   // FIXME: Should I update the random seed?
-  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;roll_result = random(100);}, CHANGE);
+  // FIXME: Use digitalPinToInterrupt(), ref: https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
+  attachInterrupt(INT0, [] () {tilted = !tilted;roll_result = random(100);}, CHANGE);
 }
 
 void loop() {
