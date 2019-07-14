@@ -1,26 +1,29 @@
 #include <Arduino.h>
 #include <MicroView.h>
 
-// Define how big the clock is. Don't make it larger than 23
-// This is the radius of the clock:
-// NOTE: The screen is 47 tall, but since that's not divisible by 2, 23 is the max radius we can set.
-#define CLOCK_SIZE 23
-
-const uint8_t maxW = uView.getLCDWidth();
-const uint8_t midW = maxW/2;
-const uint8_t maxH = uView.getLCDHeight();
-const uint8_t midH = maxH/2;
+// Screen & font size values
+const uint8_t MARGIN = 4;
+const uint8_t screen_width = uView.getLCDWidth() - MARGIN;
+const uint8_t screen_horizontal_centre = (screen_width + MARGIN) / 2;
+const uint8_t screen_height = uView.getLCDHeight() - MARGIN;
+const uint8_t screen_vertical_centre = (screen_height + MARGIN) / 2;
 // Would like to set these as const as well, but they can't be set until after choosing a font,
 // and that's done in a deeper scope where they would then be unreadable.
 uint8_t digit_width;
 uint8_t half_digit_height;
 
+
+// This is updated by the tilt-switch pin interrupt
+volatile bool tilted = false;
+
 // Might be more accurate to use an unsigned int since it will *always* be positive,
 // but I don't need numbers that big.
 int roll_result = 0;
 
-// This is updated by the tilt-switch pin interrupt
-volatile bool tilted = false;
+
+// 64x48  NOTE: I think it's only 47 pixels tall
+
+
 
 
 void init_microview() {
@@ -41,19 +44,28 @@ void drawTime() {
   static float actual_degrees;
   static float whatever_uView_calls_degrees;
 
-  // Clear the current face
+  // Redraw the background of the current die face
   {
-    uView.circleFill(midW-1, midH-1, CLOCK_SIZE, BLACK, NORM);
-    uView.circle(midW-1, midH-1, CLOCK_SIZE, WHITE, NORM);
+    // NOTE: I'm calculating the size based only on height because I want a square not a rectangle
+    uView.rectFill(screen_horizontal_centre - (screen_height / 2),
+                   screen_vertical_centre - (screen_height / 2),
+                   screen_height,
+                   screen_height,
+                   BLACK,
+                   NORM);
+    uView.rect(screen_horizontal_centre - (screen_height / 2),
+               screen_vertical_centre - (screen_height / 2),
+               screen_height,
+               screen_height);
   }
 
   // Figure out how wide the text is, so we can offset from the centre of the display before printing
   if (roll_result >= 100) {  // 3 digits
-    uView.setCursor(midW - (digit_width * 1.5), midH - half_digit_height);
+    uView.setCursor(screen_horizontal_centre - (digit_width * 1.5), screen_vertical_centre - half_digit_height);
   } else if (roll_result >= 10) {  // 2 digits
-    uView.setCursor(midW - digit_width, midH - half_digit_height);
+    uView.setCursor(screen_horizontal_centre - digit_width, screen_vertical_centre - half_digit_height);
   } else {  // 1 digit
-    uView.setCursor(midW - (digit_width / 2), midH - half_digit_height);
+    uView.setCursor(screen_horizontal_centre - (digit_width / 2), screen_vertical_centre - half_digit_height);
   }
   // Print the current roll result.
   uView.print(roll_result);
@@ -72,11 +84,11 @@ void drawTime() {
     //degresssec = (((second() * 360) / 60) + 270) * (PI / 180);
 
     // Calculate x,y coordinates of second hand:
-    secx = cos(degresssec) * (CLOCK_SIZE / 1.1);
-    secy = sin(degresssec) * (CLOCK_SIZE / 1.1);
+    secx = cos(degresssec) * (23 / 1.1);
+    secy = sin(degresssec) * (23 / 1.1);
 
     // Draw hands with the line function:
-    uView.line(midW, midH, midW+secx, midH+secy, WHITE, XOR);
+    uView.line(screen_horizontal_centre, screen_vertical_centre, screen_horizontal_centre+secx, screen_vertical_centre+secy, WHITE, XOR);
   }
 
   // Actually draw the hands with the display() function.
