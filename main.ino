@@ -22,43 +22,56 @@ buy us a round!
 Distributed as-is; no warranty is given.
 *****************************************************************/
 #include <MicroView.h>
+// FIXME: I think this is only used to check if it's been more than a second since last screen refresh. Change how we do that, and remove it.
 #include <Time.h>
 
 // Define how big the clock is. Don't make it larger than 23
 // This is the radius of the clock:
+// NOTE: The screen is 47 tall, but since that's not divisible by 2, 23 is the max radius we can set.
 #define CLOCK_SIZE 23
 
 const uint8_t maxW = uView.getLCDWidth();
 const uint8_t midW = maxW/2;
 const uint8_t maxH = uView.getLCDHeight();
 const uint8_t midH = maxH/2;
+uint8_t digit_width;
+uint8_t half_digit_height;
 
+// Might be more accurate to use an unsigned int since it will *always* be positive,
+// but I don't need numbers that big.
+int roll_result = 0;
+
+// This is updated by the tilt-switch pin interrupt
 volatile bool tilted = false;
 
-void setup()
-{
+void setup() {
   uView.begin();    // set up the MicroView
   uView.clear(PAGE);// erase hardware memory inside the OLED
   uView.display();  // display the content in the now cleared buffer
 
-  uView.setFontType(2); // set font type 2 (sevensegment)
+  uView.setFontType(2); // set font type 2 (7segment)
+  // FIXME: Can I find/make a more D&D/fantasy style font instead?
+  //
+  digit_width = uView.getFontWidth();
+  half_digit_height = uView.getFontHeight() / 2;
 
   // Draw clock face (circle outline & text):
   drawFace();
-  
+
   Serial.begin(9600);
   // Enable a pull up resistor built in to the Arduino controller.
   // FIXME: Is that built in for every pin?
   pinMode(2, INPUT_PULLUP);
-  
+
   // Whenever the state changes on D2, change toggled the tilted bool.
   // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
   // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
-  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;}, CHANGE);
+  // FIXME: roll_result is not volatile, it should not be getting set directly here
+  // FIXME: Should I update the random seed?
+  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;roll_result = random(100);}, CHANGE);
 }
 
-void loop() 
-{
+void loop() {
   drawTime();
   uView.invert(tilted);
   Serial.print("D2 = ");
@@ -67,11 +80,12 @@ void loop()
   Serial.print(tilted);
   Serial.print("; A0 = ");
   Serial.print(analogRead(A0) / 1024.0);
+  Serial.print("; roll = ");
+  Serial.print(roll_result);
   Serial.println();
 }
 
-void drawTime()
-{
+void drawTime() {
   static boolean firstDraw = false;
   static unsigned long mSec = millis() + 1000;
   static float degresshour, degressmin, degresssec,
@@ -80,14 +94,26 @@ void drawTime()
   float actual_degrees;
   float whatever_uView_calls_degrees;
   // If mSec
-  if (mSec != (unsigned long)second()) 
-  {
+  if (mSec != (unsigned long)second()) {
+
     // First time draw requires extra line to set up XOR's:
     // NOTE: "first"Draw is a lie, I think this is undrawing the line from the previous run.
-    if (firstDraw) 
-    {
-      uView.line(midW, midH, 32 + secx, 24 + secy, WHITE, XOR);
+    if (firstDraw) {
+      uView.circleFill(midW-1, midH-1, CLOCK_SIZE, BLACK, NORM);
+      uView.circle(midW-1, midH-1, CLOCK_SIZE, WHITE, NORM);
+//      uView.line(midW, midH, 32 + secx, 24 + secy, WHITE, XOR);
     }
+
+  if (roll_result >= 100) {  // 3 digits
+    uView.setCursor(midW - (digit_width * 1.5), midH - half_digit_height);
+  } else if (roll_result >= 10) {  // 2 digits
+    uView.setCursor(midW - digit_width, midH - half_digit_height);
+  } else {  // 1 digit
+    uView.setCursor(midW - (digit_width / 2), midH - half_digit_height);
+  }
+  uView.print(roll_result);
+
+
 
     actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
     actual_degrees = actual_degrees - 180;
@@ -103,11 +129,11 @@ void drawTime()
 
     // Draw hands with the line function:
     uView.line(midW, midH, midW+secx, midH+secy, WHITE, XOR);
-    
+
     // Set firstDraw flag to true, so we don't do it again.
     // NOTE: Uh, that's a lie, it does that when it is true.
     firstDraw = true;
-    
+
     // Actually draw the hands with the display() function.
     uView.display();
   }
@@ -115,22 +141,18 @@ void drawTime()
 
 // Draw the clock face. That includes the circle outline and
 // the 12, 3, 6, and 9 text.
-void drawFace()
-{
-  uint8_t fontW = uView.getFontWidth();
-  uint8_t fontH = uView.getFontHeight();
-  
-  //uView.setCursor(27, 0); // points cursor to x=27 y=0
-  uView.setCursor(midW-fontW-1, midH-CLOCK_SIZE+1);
-  uView.print(20);  // Print the "12"
-  uView.setCursor(midW-(fontW/2)-1, midH+CLOCK_SIZE-fontH-1);
-  uView.print(2);  // Print the "6"
-  uView.setCursor(midW-CLOCK_SIZE+1, midH-fontH/2);
-  uView.print(6);  // Print the "9"
-  uView.setCursor(midW+CLOCK_SIZE-fontW-2, midH-fontH/2);
-  uView.print(4);  // Print the "3"
-  uView.circle(midW-1, midH-1, CLOCK_SIZE);
-  
+void drawFace() {
+//  //uView.setCursor(27, 0); // points cursor to x=27 y=0
+//  uView.setCursor(midW-fontW-1, midH-CLOCK_SIZE+1);
+//  uView.print(20);  // Print the "12"
+//  uView.setCursor(midW-(fontW/2)-1, midH+CLOCK_SIZE-fontH-1);
+//  uView.print(2);  // Print the "6"
+//  uView.setCursor(midW-CLOCK_SIZE+1, midH-fontH/2);
+//  uView.print(6);  // Print the "9"
+//  uView.setCursor(midW+CLOCK_SIZE-fontW-2, midH-fontH/2);
+//  uView.print(4);  // Print the "3"
+//  uView.circle(midW-1, midH-1, CLOCK_SIZE);
+
   //Draw the clock
   uView.display();
 }
