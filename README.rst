@@ -10,3 +10,5 @@ I'm currently planning to just use a coin-cell or 2 for the battery, but I have 
 
 
 FIXME: Mock up a circuit diagram with Fritzing. I know it's tiny & stupid simple, but do it anyway.
+
+FIXME: Don't dump all the code in a single main.ino file. Arduino-mk doesn't like anything else, but it's impossible to keep up with.
