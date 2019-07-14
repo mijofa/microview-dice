@@ -1,7 +1,5 @@
 microview-dice
 ==============
-This project is going to be using `arduino-mk <https://github.com/sudar/Arduino-Makefile>`_, but I haven't set that up yet
-
 The purpose of this project is to make a battery powered dice that you can "roll" (shake a tilt-switch) for a selectable number of sides.
 I do not intend to make the number of sides infinite, but rather just to the standard D&D dice of D2, D4, D6, D8, D10, D12, D20, and maybe D100.
 
