@@ -28,27 +28,20 @@ Distributed as-is; no warranty is given.
 // This is the radius of the clock:
 #define CLOCK_SIZE 23
 
-// Use these defines to set the clock's begin time
-#define HOUR 10
-#define MINUTE 02
-#define SECOND 00
-#define DAY 28
-#define MONTH 2
-#define YEAR 2015
-
 const uint8_t maxW = uView.getLCDWidth();
 const uint8_t midW = maxW/2;
 const uint8_t maxH = uView.getLCDHeight();
 const uint8_t midH = maxH/2;
 
+volatile bool tilted = false;
+
 void setup()
 {
-  // Set the time in the time library:
-  setTime(HOUR, MINUTE, SECOND, DAY, MONTH, YEAR);
-
   uView.begin();    // set up the MicroView
   uView.clear(PAGE);// erase hardware memory inside the OLED
-  uView.display();  // display the content in the buffer
+  uView.display();  // display the content in the now cleared buffer
+
+  uView.setFontType(2); // set font type 2 (sevensegment)
 
   // Draw clock face (circle outline & text):
   drawFace();
@@ -58,17 +51,22 @@ void setup()
   // FIXME: Is that built in for every pin?
   pinMode(2, INPUT_PULLUP);
   
-  // FIXME: uView.rectFill probably takes longer than an ISR should take.
-  attachInterrupt(digitalPinToInterrupt(2), [] () {uView.rectFill(0,0,uView.getLCDWidth(),uView.getLCDHeight(), WHITE, XOR);}, CHANGE);
+  // Whenever the state changes on D2, change toggled the tilted bool.
+  // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
+  // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
+  attachInterrupt(digitalPinToInterrupt(2), [] () {tilted = !tilted;}, CHANGE);
 }
 
 void loop() 
 {
   drawTime();
-  Serial.print("Digital state of thing is: ");
-  Serial.println(digitalRead(2));
-  Serial.print("Analog state of thing is: ");
-  Serial.println(analogRead(A0));
+  uView.invert(tilted);
+  Serial.print("D2 = ");
+  Serial.print(digitalRead(2));
+  Serial.print("; tilted = ");
+  Serial.print(tilted);
+  Serial.print("; A0 = ");
+  Serial.print(analogRead(A0) / 1024.0);
   Serial.println();
 }
 
@@ -84,41 +82,30 @@ void drawTime()
   // If mSec
   if (mSec != (unsigned long)second()) 
   {
-    actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
-    actual_degrees = actual_degrees - 180;
-    whatever_uView_calls_degrees = (actual_degrees + 270) * (PI / 180);
-    degresssec = whatever_uView_calls_degrees;
-
     // First time draw requires extra line to set up XOR's:
+    // NOTE: "first"Draw is a lie, I think this is undrawing the line from the previous run.
     if (firstDraw) 
     {
-      //uView.line(midW, midH, 32 + hourx, 24 + houry, WHITE, XOR);
-      //uView.line(midW, midH, 32 + minx, 24 + miny, WHITE, XOR);
       uView.line(midW, midH, 32 + secx, 24 + secy, WHITE, XOR);
     }
-    //// Calculate hour hand degrees:
-    //degresshour = (((hour() * 360) / 12) + 270) * (PI / 180);
-    //// Calculate minute hand degrees:
-    //degressmin = (((minute() * 360) / 60) + 270) * (PI / 180);
+
+    actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
+    actual_degrees = actual_degrees - 180;
+    // So basically, I don't understand any of this math. I just adapted it from what the original example used.
+    whatever_uView_calls_degrees = (actual_degrees + 270) * (PI / 180);
+    degresssec = whatever_uView_calls_degrees;
     //// Calculate second hand degrees:
     //degresssec = (((second() * 360) / 60) + 270) * (PI / 180);
 
-    //// Calculate x,y coordinates of hour hand:
-    //hourx = cos(degresshour) * (CLOCK_SIZE / 2.5);
-    //houry = sin(degresshour) * (CLOCK_SIZE / 2.5);
-    //// Calculate x,y coordinates of minute hand:
-    //minx = cos(degressmin) * (CLOCK_SIZE / 1.4);
-    //miny = sin(degressmin) * (CLOCK_SIZE / 1.4);
     // Calculate x,y coordinates of second hand:
     secx = cos(degresssec) * (CLOCK_SIZE / 1.1);
     secy = sin(degresssec) * (CLOCK_SIZE / 1.1);
 
     // Draw hands with the line function:
-//    uView.line(midW, midH, midW+hourx, midH+houry, WHITE, XOR);
-//    uView.line(midW, midH, midW+minx, midH+miny, WHITE, XOR);
     uView.line(midW, midH, midW+secx, midH+secy, WHITE, XOR);
     
     // Set firstDraw flag to true, so we don't do it again.
+    // NOTE: Uh, that's a lie, it does that when it is true.
     firstDraw = true;
     
     // Actually draw the hands with the display() function.
@@ -130,8 +117,6 @@ void drawTime()
 // the 12, 3, 6, and 9 text.
 void drawFace()
 {
-  uView.setFontType(0); // set font type 0 (Smallest)
-  
   uint8_t fontW = uView.getFontWidth();
   uint8_t fontH = uView.getFontHeight();
   
