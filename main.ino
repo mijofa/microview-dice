@@ -21,9 +21,8 @@ buy us a round!
 
 Distributed as-is; no warranty is given.
 *****************************************************************/
+#include <Arduino.h>
 #include <MicroView.h>
-// FIXME: I think this is only used to check if it's been more than a second since last screen refresh. Change how we do that, and remove it.
-#include <Time.h>
 
 // Define how big the clock is. Don't make it larger than 23
 // This is the radius of the clock:
@@ -52,16 +51,14 @@ void drawTime() {
 
   float actual_degrees;
   float whatever_uView_calls_degrees;
-  // If mSec
-  if (mSec != (unsigned long)second()) {
 
-    // First time draw requires extra line to set up XOR's:
-    // NOTE: "first"Draw is a lie, I think this is undrawing the line from the previous run.
-    if (firstDraw) {
-      uView.circleFill(midW-1, midH-1, CLOCK_SIZE, BLACK, NORM);
-      uView.circle(midW-1, midH-1, CLOCK_SIZE, WHITE, NORM);
-//      uView.line(midW, midH, 32 + secx, 24 + secy, WHITE, XOR);
-    }
+  // First time draw requires extra line to set up XOR's:
+  // NOTE: "first"Draw is a lie, I think this is undrawing the line from the previous run.
+  if (firstDraw) {
+    uView.circleFill(midW-1, midH-1, CLOCK_SIZE, BLACK, NORM);
+    uView.circle(midW-1, midH-1, CLOCK_SIZE, WHITE, NORM);
+//    uView.line(midW, midH, 32 + secx, 24 + secy, WHITE, XOR);
+  }
 
   if (roll_result >= 100) {  // 3 digits
     uView.setCursor(midW - (digit_width * 1.5), midH - half_digit_height);
@@ -74,45 +71,26 @@ void drawTime() {
 
 
 
-    actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
-    actual_degrees = actual_degrees - 180;
-    // So basically, I don't understand any of this math. I just adapted it from what the original example used.
-    whatever_uView_calls_degrees = (actual_degrees + 270) * (PI / 180);
-    degresssec = whatever_uView_calls_degrees;
-    //// Calculate second hand degrees:
-    //degresssec = (((second() * 360) / 60) + 270) * (PI / 180);
+  actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
+  actual_degrees = actual_degrees - 180;
+  // So basically, I don't understand any of this math. I just adapted it from what the original example used.
+  whatever_uView_calls_degrees = (actual_degrees + 270) * (PI / 180);
+  degresssec = whatever_uView_calls_degrees;
+  //// Calculate second hand degrees:
+  //degresssec = (((second() * 360) / 60) + 270) * (PI / 180);
 
-    // Calculate x,y coordinates of second hand:
-    secx = cos(degresssec) * (CLOCK_SIZE / 1.1);
-    secy = sin(degresssec) * (CLOCK_SIZE / 1.1);
+  // Calculate x,y coordinates of second hand:
+  secx = cos(degresssec) * (CLOCK_SIZE / 1.1);
+  secy = sin(degresssec) * (CLOCK_SIZE / 1.1);
 
-    // Draw hands with the line function:
-    uView.line(midW, midH, midW+secx, midH+secy, WHITE, XOR);
+  // Draw hands with the line function:
+  uView.line(midW, midH, midW+secx, midH+secy, WHITE, XOR);
 
-    // Set firstDraw flag to true, so we don't do it again.
-    // NOTE: Uh, that's a lie, it does that when it is true.
-    firstDraw = true;
+  // Set firstDraw flag to true, so we don't do it again.
+  // NOTE: Uh, that's a lie, it does that when it is true.
+  firstDraw = true;
 
-    // Actually draw the hands with the display() function.
-    uView.display();
-  }
-}
-
-// Draw the clock face. That includes the circle outline and
-// the 12, 3, 6, and 9 text.
-void drawFace() {
-//  //uView.setCursor(27, 0); // points cursor to x=27 y=0
-//  uView.setCursor(midW-fontW-1, midH-CLOCK_SIZE+1);
-//  uView.print(20);  // Print the "12"
-//  uView.setCursor(midW-(fontW/2)-1, midH+CLOCK_SIZE-fontH-1);
-//  uView.print(2);  // Print the "6"
-//  uView.setCursor(midW-CLOCK_SIZE+1, midH-fontH/2);
-//  uView.print(6);  // Print the "9"
-//  uView.setCursor(midW+CLOCK_SIZE-fontW-2, midH-fontH/2);
-//  uView.print(4);  // Print the "3"
-//  uView.circle(midW-1, midH-1, CLOCK_SIZE);
-
-  //Draw the clock
+  // Actually draw the hands with the display() function.
   uView.display();
 }
 
