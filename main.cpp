@@ -6,40 +6,6 @@
 // This is updated by the tilt-switch pin interrupt
 volatile bool tilted = false;
 
-void redraw_dice() {
-    static float degresssec, secx, secy;
-    static float actual_degrees;
-    static float whatever_uView_calls_degrees;
-
-    // D4
-    draw_face_d4();
-    // D6
-    draw_face_d6();
-
-    // DEBUGGING
-    // Print a line to indicate what the soft-pot on A0 is set to.
-    //
-    // So basically, I don't understand any of this math. I just adapted it from what the MicroView example code used.
-    {
-        actual_degrees = (analogRead(A0) / 1024.0) * 360.0;
-        actual_degrees = actual_degrees - 180;
-        whatever_uView_calls_degrees = (actual_degrees + 270) * (PI / 180);
-        degresssec = whatever_uView_calls_degrees;
-        //// Calculate second hand degrees:
-        //degresssec = (((second() * 360) / 60) + 270) * (PI / 180);
-
-        // Calculate x,y coordinates of second hand:
-        secx = cos(degresssec) * (23 / 1.1);
-        secy = sin(degresssec) * (23 / 1.1);
-
-        // Draw hands with the line function:
-        uView.line(screen_horizontal_centre, screen_vertical_centre, screen_horizontal_centre+secx, screen_vertical_centre+secy, WHITE, XOR);
-    }
-
-    // Actually draw the graphics to the display
-    uView.display();
-}
-
 void setup() {
     uView.begin();    // set up the MicroView
     uView.clear(PAGE);// erase hardware memory inside the OLED
@@ -75,7 +41,6 @@ void loop() {
     if (tilted) {
         roll_dice(current_dice);
         tilted = false;
-        redraw_dice();
     }
 
     pot_pos = analogRead(A0);
