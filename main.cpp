@@ -61,8 +61,6 @@ void loop() {
         update_dice_face();
     }
 
-    uView.display();
-
 //  uView.invert(tilted);  // DEBUGGING
     Serial.print("Dice = ");
     Serial.print(current_dice);

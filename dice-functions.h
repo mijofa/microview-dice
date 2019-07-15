@@ -165,6 +165,7 @@ int roll_dice(int faces) {
     //       Why max is -1 and min is not +1 I have no fucking idea, but that is super confusing so I'm just gonna offset that here.
     int roll_result = random(1, faces+1);
     draw_digit(roll_result);
+    uView.display();
     return roll_result;
 }
 
@@ -184,6 +185,7 @@ void update_dice_face() {
         draw_face_d12();
     }
     draw_digit(current_dice);
+    uView.display();
 }
 
 #endif
