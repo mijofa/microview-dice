@@ -6,23 +6,7 @@
 // This is updated by the tilt-switch pin interrupt
 volatile bool tilted = false;
 
-// Might be more accurate to use an unsigned int since it will *always* be positive,
-// but I don't need numbers that big.
-int min_roll = 1;
-int max_roll = 4;
-int roll_result = 0;
-
-
-// 64x48  NOTE: I think it's only 47 pixels tall
-
-void init_microview() {
-  uView.begin();    // set up the MicroView
-  uView.clear(PAGE);// erase hardware memory inside the OLED
-  uView.display();  // display the content in the now cleared buffer
-}
-
-
-void drawTime() {
+void redraw_dice() {
   static float degresssec, secx, secy;
   static float actual_degrees;
   static float whatever_uView_calls_degrees;
@@ -57,7 +41,9 @@ void drawTime() {
 }
 
 void setup() {
-  init_microview();
+  uView.begin();    // set up the MicroView
+  uView.clear(PAGE);// erase hardware memory inside the OLED
+  uView.display();  // display the content in the now cleared buffer
 
   // The analog pins are input by default, just explicitly setting it to self-document.
   pinMode(A0, INPUT);
@@ -71,14 +57,14 @@ void setup() {
   // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
   // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
   // FIXME: Use digitalPinToInterrupt(), ref: https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
-  attachInterrupt(INT0, [] () {tilted = !tilted;roll_dice(max_roll);}, CHANGE);
+  attachInterrupt(INT0, [] () {tilted = !tilted;roll_dice(6);}, CHANGE);
 
   Serial.begin(9600);  // DEBUGGING
 
 }
 
 void loop() {
-  drawTime();
+  redraw_dice();
 
 //  uView.invert(tilted);  // DEBUGGING
 
@@ -88,7 +74,5 @@ void loop() {
   Serial.print(tilted);  // DEBUGGING
   Serial.print("; A0 = ");  // DEBUGGING
   Serial.print(analogRead(A0) / 1024.0);  // DEBUGGING
-  Serial.print("; roll = ");  // DEBUGGING
-  Serial.print(roll_result);  // DEBUGGING
   Serial.println();  // DEBUGGING
 }
