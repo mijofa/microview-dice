@@ -36,7 +36,7 @@ void redraw_dice() {
         uView.line(screen_horizontal_centre, screen_vertical_centre, screen_horizontal_centre+secx, screen_vertical_centre+secy, WHITE, XOR);
     }
 
-    // Actually draw the hands with the display() function.
+    // Actually draw the graphics to the display
     uView.display();
 }
 
@@ -57,22 +57,45 @@ void setup() {
     // NOTE: This uses a lambda, but I don't actually understand lambda syntax in C.
     // FIXME: Just set tilted = true and let the RNG unset it when finished with that action?
     // FIXME: Use digitalPinToInterrupt(), ref: https://www.arduino.cc/reference/en/language/functions/external-interrupts/attachinterrupt/
-    attachInterrupt(INT0, [] () {tilted = !tilted;roll_dice(6);}, CHANGE);
+    attachInterrupt(INT0, [] () {tilted = true;}, CHANGE);
 
     Serial.begin(9600);  // DEBUGGING
-
+    Serial.println(millis());
 }
 
+// Default values for variables used in the loop
+unsigned long last_trigger = 0;
+int last_loop_pot_pos = 0;
+int pot_pos;
+int menu_pos;
+
 void loop() {
-    redraw_dice();
+    if (millis()<last_trigger+200){return;}else{last_trigger=millis();}  // Don't loop more than 5/s
+
+    if (tilted) {
+        roll_dice(current_dice);
+        tilted = false;
+        redraw_dice();
+    }
+
+    pot_pos = analogRead(A0);
+    // With a fine enough soft-pot it might be sitting on just the edge and flapping back and forth,
+    // so the extra && parts here are just to avoid flapping in those cases
+    if (last_loop_pot_pos != pot_pos - 1 && last_loop_pot_pos != pot_pos && last_loop_pot_pos != pot_pos + 1) {
+        last_loop_pot_pos = pot_pos;
+        menu_pos = pot_pos / (1024 / num_of_dice);
+    }
+    if (dice_types[menu_pos] != current_dice) {
+        current_dice = dice_types[menu_pos];
+        update_dice_face();
+    }
+
+    uView.display();
 
 //  uView.invert(tilted);  // DEBUGGING
-
-    Serial.print("D2 = ");  // DEBUGGING
-    Serial.print(digitalRead(2));  // DEBUGGING
-    Serial.print("; tilted = ");  // DEBUGGING
-    Serial.print(tilted);  // DEBUGGING
+    Serial.print("Menu option = ");
+    Serial.print(menu_pos);
     Serial.print("; A0 = ");  // DEBUGGING
-    Serial.print(analogRead(A0) / 1024.0);  // DEBUGGING
+    Serial.print(analogRead(A0));  // DEBUGGING
     Serial.println();  // DEBUGGING
 }
