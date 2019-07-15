@@ -39,16 +39,17 @@ int roll;
 void loop() {
     if (millis()<last_trigger+200){return;}else{last_trigger=millis();}  // Don't loop more than 5/s
 
-    if (tilted) {
-        roll = roll_dice(current_dice);
-        tilted = false;
-        // FIXME: Inverting is bright and harsh on the eyes, find a better way to indicate "busy".
-        //        Alternatively, is it possible to invert only the dice? I doubt it.
-        uView.invert(true);
-    } else {
-        uView.invert(false);
-    }
+    // FIXME: I'm printing this information immediately before it changes rather than after,
+    //        but the 200 milliseconds is short enough I don't think it makes enough difference.
+    Serial.print("Dice = ");
+    Serial.print(current_dice);
+    Serial.print("; tilted = ");  // DEBUGGING
+    Serial.print(tilted);  // DEBUGGING
+    Serial.print("; roll = ");  // DEBUGGING
+    Serial.print(roll);  // DEBUGGING
+    Serial.print("    \r");  // DEBUGGING
 
+    // Choose the dice
     pot_pos = analogRead(A0);
     // With a fine enough soft-pot it might be sitting on just the edge and flapping back and forth,
     // so the extra && parts here are just to avoid flapping in those cases
@@ -57,14 +58,22 @@ void loop() {
         menu_pos = pot_pos / (1024 / num_of_dice);
     }
     if (dice_types[menu_pos] != current_dice) {
+        Serial.println(); // DEBUGGING
         current_dice = dice_types[menu_pos];
         update_dice_face();
     }
 
-//  uView.invert(tilted);  // DEBUGGING
-    Serial.print("Dice = ");
-    Serial.print(current_dice);
-    Serial.print("; roll = ");  // DEBUGGING
-    Serial.print(roll);  // DEBUGGING
-    Serial.println();  // DEBUGGING
+    // Roll the dice
+    if (tilted) {
+        roll = roll_dice(current_dice);
+        tilted = false;
+        // NOTE: uView.invert() doesn't need uView.display() called afterwards
+        // FIXME: Inverting is bright and harsh on the eyes, try changing the contrast setting,
+        //        and/or find a better way to indicate "busy" such as a piezo orperhaps only flashing a small part of the screen.
+        //        Alternatively, is it possible to invert only the dice? I doubt it.
+        uView.invert(true);
+    } else {
+        // FIXME: Runs every 200ms, that can't be efficient.
+        uView.invert(false);
+    }
 }

@@ -19,7 +19,7 @@ const int horizontal_margin_for_squaring = screen_margin + screen_horizontal_cen
 // Number of faces each type of die can have
 const int dice_types[8] = {2, 4, 6, 8, 10, 12, 20, 100};
 const int num_of_dice = 8;  // C doesn't support any useful way of counting how many items are in an array
-int current_dice = 20;  // FIXME: Default to where the soft-pot is set
+int current_dice;  // FIXME: Default to where the soft-pot is set
 
 void draw_face_d2() {
     uView.circle(
