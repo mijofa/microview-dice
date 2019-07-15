@@ -34,13 +34,19 @@ unsigned long last_trigger = 0;
 int last_loop_pot_pos = 0;
 int pot_pos;
 int menu_pos;
+int roll;
 
 void loop() {
     if (millis()<last_trigger+200){return;}else{last_trigger=millis();}  // Don't loop more than 5/s
 
     if (tilted) {
-        roll_dice(current_dice);
+        roll = roll_dice(current_dice);
         tilted = false;
+        // FIXME: Inverting is bright and harsh on the eyes, find a better way to indicate "busy".
+        //        Alternatively, is it possible to invert only the dice? I doubt it.
+        uView.invert(true);
+    } else {
+        uView.invert(false);
     }
 
     pot_pos = analogRead(A0);
@@ -58,9 +64,9 @@ void loop() {
     uView.display();
 
 //  uView.invert(tilted);  // DEBUGGING
-    Serial.print("Menu option = ");
-    Serial.print(menu_pos);
-    Serial.print("; A0 = ");  // DEBUGGING
-    Serial.print(analogRead(A0));  // DEBUGGING
+    Serial.print("Dice = ");
+    Serial.print(current_dice);
+    Serial.print("; roll = ");  // DEBUGGING
+    Serial.print(roll);  // DEBUGGING
     Serial.println();  // DEBUGGING
 }
