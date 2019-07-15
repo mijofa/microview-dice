@@ -49,6 +49,14 @@ void loop() {
     Serial.print(roll);  // DEBUGGING
     Serial.print("    \r");  // DEBUGGING
 
+    if (Serial.available()) {
+        // I'm not actually doing anything with the serial information,
+        // just "rolling" whenever there is some.
+        // NOTE: If I were to add any sort of cheating the rolls, this is where it would go.
+        Serial.read();
+        tilted = true;
+    }
+
     // Choose the dice
     pot_pos = analogRead(A0);
     // With a fine enough soft-pot it might be sitting on just the edge and flapping back and forth,
