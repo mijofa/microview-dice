@@ -7,8 +7,13 @@ I'm using a `Sparkfun Microview <https://www.sparkfun.com/products/12923>`_ as t
 I'm using a tilt switch instead of an accelerometer mostly to keep it smaller, but also I figured it will probably use less battery. However I have some concerns about how random the random number generator will be that I suspect using an acellerometer could improve, so that might be a change for V2.
 I'm currently planning to just use a coin-cell or 2 for the battery, but I have no idea how well that's going to work at the moment and will figure that after I've sorted out the code. Perhaps take a look at what battery was used for `Microview Wordy <https://hackaday.io/project/3577-wordy>`_ if a coin-cell is not good enough.
 
-
-
-FIXME: Mock up a circuit diagram with Fritzing. I know it's tiny & stupid simple, but do it anyway.
-
-FIXME: Don't dump all the code in a single main.ino file. Arduino-mk doesn't like anything else, but it's impossible to keep up with.
+TODO
+----
+* Mock up a circuit diagram with Fritzing. I know it's tiny & stupid simple, but do it anyway.
+* D20 & D100 face icons
+* 3Difying the face icons
+  D8 should be more like D10
+  D10 should be more like the D8 with better 3D
+  D12 is good, but could seems out of place while others are 3D
+* Perhaps redo all the dice faces as bitmaps
+* Consider shifting the centred digits when they start with a '1' which is very thin
