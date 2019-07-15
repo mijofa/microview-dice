@@ -4,6 +4,8 @@ So here's some Python that should work pretty much the same as the uView drawing
 
 It doesn't implement all of the drawing functions, specifically neglects font & character functions.
 Also doesn't implement colour or mode selecting. (yet?)
+Never going to bother implementing the widgets.
+
 """
 import turtle
 
@@ -34,7 +36,7 @@ def _translate_coords(x, y):
     return x, y
 
 
-def setup():
+def begin():
     # So Turtle's pixels are tiny, I can't figure out how to just zoom in or lower the resolution,
     # so let's just multiply it all by 10
     turtle.setup(MICROVIEW_WIDTH * _size_multiplier, MICROVIEW_HEIGHT * _size_multiplier)
@@ -44,8 +46,9 @@ def setup():
     clear()
 
 
+# Actions & settings
 def display():
-    pass
+    raise NotImplementedError("Display happens immediately with this library")
 
 
 def clear():
@@ -70,7 +73,10 @@ def getLCDHeight():
     return MICROVIEW_HEIGHT
 
 
-# Font
+# Display Scrolling
+# Font Functions
+
+
 # Pixels
 def pixel(x, y, color=None, mode=None):
     if color or mode:
