@@ -1,3 +1,6 @@
+// I don't properly understand the difference between .cpp & .h files,
+// and I'm pretty sure I'm abusing this .h file and treating it as a mish-mash of both
+
 #ifndef DICE_FUNCTIONS_INCLUDE_GUARD
 #define DICE_FUNCTIONS_INCLUDE_GUARD
 
