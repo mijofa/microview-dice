@@ -124,22 +124,32 @@ void draw_face_d12() {
 }
 
 void draw_digit(int digit) {
-    uView.setFontType(2); // set font type 2 (7segment)
+    uView.setFontType(2);  // set font type 2 (7segment)
     // FIXME: Can I find/make a more D&D/fantasy style font instead?
     int digit_width = uView.getFontWidth();
     int digit_height = uView.getFontHeight();
     int half_digit_height = digit_height / 2;
 
-    if (digit == 10) {
-        digit = 0;
-    }
+    int hundreds_left_origin = screen_horizontal_centre - (digit_width * 1.5);
+    int tens_left_origin = screen_horizontal_centre - digit_width;
+    int ones_left_origin = screen_horizontal_centre - (digit_width / 2);
+    int top_origin = screen_vertical_centre - half_digit_height;
+
+    // NOTE: 10 & 100 get printed as 0 & 00 respectively, to match how the text usually printed on D10s & D100s 
 
     // Clear the previous digit.
     // Normally uView.print will clear the pixels underneath the new characters,
     // but when shifting from 2 digits to 1 digit it gets a bit messy.
-    if (current_dice > 10) {
+    if (current_dice > 100) {
         uView.rectFill(
-                screen_horizontal_centre - digit_width, screen_vertical_centre - half_digit_height,
+                hundreds_left_origin, top_origin,
+                // FIXME: The .1 here is effectively a magic number only used to account for the spacing between digits,
+                //        it might not be correct, but it looks alright so far.
+                digit_width * 3.1, digit_height,
+                BLACK, NORM);
+    } else if (current_dice > 10) {
+        uView.rectFill(
+                tens_left_origin, top_origin,
                 // FIXME: The .1 here is effectively a magic number only used to account for the spacing between digits,
                 //        it might not be correct, but it looks alright so far.
                 digit_width * 2.1, digit_height,
@@ -147,15 +157,21 @@ void draw_digit(int digit) {
     }
 
     // Figure out how wide the text is, so we can offset from the centre of the display before printing
-    if (digit >= 100) {  // 3 digits
-        uView.setCursor(screen_horizontal_centre - (digit_width * 1.5), screen_vertical_centre - half_digit_height);
-    } else if (digit >= 10) {  // 2 digits
-        uView.setCursor(screen_horizontal_centre - digit_width, screen_vertical_centre - half_digit_height);
+    if (digit > 100) {  // 3 digits
+        uView.setCursor(hundreds_left_origin, top_origin);
+    } else if (digit > 10) {  // 2 digits
+        uView.setCursor(tens_left_origin, top_origin);
     } else {  // 1 digit
-        uView.setCursor(screen_horizontal_centre - (digit_width / 2), screen_vertical_centre - half_digit_height);
+        uView.setCursor(ones_left_origin, top_origin);
     }
     // Print the current roll result.
-    uView.print(digit);
+    if (current_dice == 10 && digit == 10) {
+        uView.print('0');
+    } else if (current_dice == 100 && digit == 100) {
+        uView.print("00");
+    } else {
+        uView.print(digit);
+    }
 }
 
 // FIXME: This is called directly from the ISR, it's not marked volatile enough for that
