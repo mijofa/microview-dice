@@ -103,24 +103,25 @@ void draw_face_d10() {
 }
 
 void draw_face_d12() {
-    int twofifth_height = ((screen_height - (screen_margin * 2)) / 5) * 2;
-    int quart_width = ((screen_horizontal_centre - horizontal_margin_for_squaring) / 2);
+    int onetenth_size = ((screen_height - (screen_margin * 2)) / 10);
+    int onefifth_size = onetenth_size * 2;
+    int twofifth_size = onefifth_size * 2;
     uView.line(
-            screen_horizontal_centre, screen_margin,  // top
-            horizontal_margin_for_squaring, twofifth_height + screen_margin);  // left
+        screen_horizontal_centre, screen_margin,  // top
+        horizontal_margin_for_squaring, twofifth_size + screen_margin);  // left
     uView.line(
-            screen_horizontal_centre, screen_margin,  // top
-            screen_width - horizontal_margin_for_squaring, twofifth_height + screen_margin);  // right
+        screen_horizontal_centre, screen_margin,  // top
+        screen_width - horizontal_margin_for_squaring, twofifth_size + screen_margin);  // right
 
     uView.line(
-            horizontal_margin_for_squaring, twofifth_height + screen_margin,  // left
-            horizontal_margin_for_squaring + quart_width, screen_height - screen_margin);  // bottom-left
+        horizontal_margin_for_squaring, twofifth_size + screen_margin,  // left
+        screen_horizontal_centre - (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-left
     uView.line(
-            screen_width - horizontal_margin_for_squaring, twofifth_height + screen_margin,  // right
-            screen_horizontal_centre + quart_width, screen_height - screen_margin);  // bottom-right
+        screen_width - horizontal_margin_for_squaring, twofifth_size + screen_margin,  // right
+        screen_horizontal_centre + (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-right
     uView.line(
-            horizontal_margin_for_squaring + quart_width, screen_height - screen_margin,  // bottom-left
-            screen_horizontal_centre + quart_width, screen_height - screen_margin);  // bottom-right
+        screen_horizontal_centre - (onetenth_size * 3), screen_margin + (onetenth_size * 9),  // bottom-left
+        screen_horizontal_centre + (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-right
 }
 
 void draw_digit(int digit) {
