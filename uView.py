@@ -92,8 +92,8 @@ def line(x0, y0, x1, y1, color=None, mode=None):
     if color or mode:
         raise NotImplementedError()
 
-    turtle.pendown()
     turtle.goto(*_translate_coords(x0, y0))
+    turtle.pendown()
     turtle.goto(*_translate_coords(x1, y1))
     turtle.penup()
 

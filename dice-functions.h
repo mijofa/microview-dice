@@ -179,7 +179,7 @@ int roll_dice(int faces) {
     // FIXME: Should I update the random seed?
     // NOTE: random(min, max) generates random number between min and max-1.
     //       Why max is -1 and min is not +1 I have no fucking idea, but that is super confusing so I'm just gonna offset that here.
-    int roll_result = random(1, faces+1);
+    int roll_result = random(1, faces + 1);
     draw_digit(roll_result);
     uView.display();
     return roll_result;
