@@ -47,23 +47,18 @@ void draw_face_d6() {
 
 void draw_face_d8() {
     // FIXME: 3Dify this one
-    int twothird_height = ((screen_height - (screen_margin * 2)) / 3) * 2;
     uView.line(
             screen_horizontal_centre, screen_margin,  // top
-            horizontal_margin_for_squaring, twothird_height);  // left
-    // The digit doesn't fit in the top section, so just don't split the sections
-//    uView.line(
-//            horizontal_margin_for_squaring, twothird_height,  // left
-//            screen_width - horizontal_margin_for_squaring, twothird_height);  // right
+            screen_margin*2 + horizontal_margin_for_squaring, screen_vertical_centre);  // left
     uView.line(
-            screen_width - horizontal_margin_for_squaring, twothird_height,  // right
+            screen_width - (screen_margin*2 + horizontal_margin_for_squaring), screen_vertical_centre,  // right
             screen_horizontal_centre, screen_margin);  // top
     uView.line(
-            horizontal_margin_for_squaring, twothird_height,  // left
+            screen_margin*2 + horizontal_margin_for_squaring, screen_vertical_centre,  // left
             screen_horizontal_centre, screen_height - screen_margin);  // bottom
     uView.line(
             screen_horizontal_centre, screen_height - screen_margin,  // bottom
-            screen_width - horizontal_margin_for_squaring, twothird_height);  // right
+            screen_width - (screen_margin*2 + horizontal_margin_for_squaring), screen_vertical_centre);  // right
 }
 
 void draw_face_d10() {
@@ -103,24 +98,51 @@ void draw_face_d10() {
 }
 
 void draw_face_d12() {
-    int twofifth_height = ((screen_height - (screen_margin * 2)) / 5) * 2;
-    int quart_width = ((screen_horizontal_centre - horizontal_margin_for_squaring) / 2);
+    int onetenth_size = ((screen_height - (screen_margin * 2)) / 10);
+    int onefifth_size = onetenth_size * 2;
+    int twofifth_size = onefifth_size * 2;
     uView.line(
-            screen_horizontal_centre, screen_margin,  // top
-            horizontal_margin_for_squaring, twofifth_height + screen_margin);  // left
+        screen_horizontal_centre, screen_margin,  // top
+        horizontal_margin_for_squaring, twofifth_size + screen_margin);  // left
     uView.line(
-            screen_horizontal_centre, screen_margin,  // top
-            screen_width - horizontal_margin_for_squaring, twofifth_height + screen_margin);  // right
+        screen_horizontal_centre, screen_margin,  // top
+        screen_width - horizontal_margin_for_squaring, twofifth_size + screen_margin);  // right
 
     uView.line(
-            horizontal_margin_for_squaring, twofifth_height + screen_margin,  // left
-            horizontal_margin_for_squaring + quart_width, screen_height - screen_margin);  // bottom-left
+        horizontal_margin_for_squaring, twofifth_size + screen_margin,  // left
+        screen_horizontal_centre - (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-left
     uView.line(
-            screen_width - horizontal_margin_for_squaring, twofifth_height + screen_margin,  // right
-            screen_horizontal_centre + quart_width, screen_height - screen_margin);  // bottom-right
+        screen_width - horizontal_margin_for_squaring, twofifth_size + screen_margin,  // right
+        screen_horizontal_centre + (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-right
     uView.line(
-            horizontal_margin_for_squaring + quart_width, screen_height - screen_margin,  // bottom-left
-            screen_horizontal_centre + quart_width, screen_height - screen_margin);  // bottom-right
+        screen_horizontal_centre - (onetenth_size * 3), screen_margin + (onetenth_size * 9),  // bottom-left
+        screen_horizontal_centre + (onetenth_size * 3), screen_margin + (onetenth_size * 9));  // bottom-right
+}
+
+void draw_face_d20() {
+    int onetenth_size = ((screen_height - (screen_margin * 2)) / 10);
+
+    // Background faces
+    uView.line(
+        screen_horizontal_centre, screen_margin,  // top
+        horizontal_margin_for_squaring, screen_vertical_centre - (onetenth_size * 2.5));  // top-left
+    uView.line(
+        screen_horizontal_centre, screen_margin,  // top
+        screen_width - horizontal_margin_for_squaring, screen_vertical_centre - (onetenth_size * 2.5));  // top-right
+
+    uView.line(
+        horizontal_margin_for_squaring, screen_vertical_centre - (onetenth_size * 2.5),  // top-left
+        horizontal_margin_for_squaring, screen_vertical_centre + (onetenth_size * 2.5));  // bottom-left
+    uView.line(
+        screen_width - horizontal_margin_for_squaring, screen_vertical_centre - (onetenth_size * 2.5),  // top-right
+        screen_width - horizontal_margin_for_squaring, screen_vertical_centre + (onetenth_size * 2.5));  // bottom-right
+
+    uView.line(
+        screen_horizontal_centre, screen_height - screen_margin,  // bottom
+        horizontal_margin_for_squaring, screen_vertical_centre + (onetenth_size * 2.5));  // bottom-left
+    uView.line(
+        screen_horizontal_centre, screen_height - screen_margin,  // bottom
+        screen_width - horizontal_margin_for_squaring, screen_vertical_centre + (onetenth_size * 2.5));  // bottom-right
 }
 
 void draw_digit(int digit) {
@@ -199,6 +221,10 @@ void update_dice_face() {
         draw_face_d10();
     } else if (current_dice == 12) {
         draw_face_d12();
+    } else if (current_dice == 20) {
+        draw_face_d20();
+    } else if (current_dice == 100) {
+        draw_face_d10();
     }
     draw_digit(current_dice);
     uView.display();
