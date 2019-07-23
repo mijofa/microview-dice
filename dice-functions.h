@@ -183,6 +183,8 @@ void draw_digit(int digit) {
         uView.setCursor(hundreds_left_origin, top_origin);
     } else if (digit > 10) {  // 2 digits
         uView.setCursor(tens_left_origin, top_origin);
+    } else if (current_dice > 10 and digit == 10) {  // If dice is 10-sided, 19 = '0', otherwise it's 2 digits
+        uView.setCursor(tens_left_origin, top_origin);
     } else {  // 1 digit
         uView.setCursor(ones_left_origin, top_origin);
     }
